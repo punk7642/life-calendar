@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Life Calendar Wallpaper</title>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// ============================================
+// CHANGE THIS TO YOUR BIRTHDAY
+const BIRTH = "1993-12-31";
+// ============================================
+
+const W = 1290, H = 2796; // iPhone 15 Pro Max
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+canvas.width = W;
+canvas.height = H;
+
+const birth = new Date(BIRTH + "T00:00:00");
+const now = new Date();
+const weeksLived = Math.floor((now - birth) / (7 * 24 * 60 * 60 * 1000));
+
+const COLS = 52, ROWS = 100;
+const marginX = W * 0.06, marginY = H * 0.08;
+const availW = W - marginX * 2, availH = H - marginY * 2;
+const dotSpace = Math.min(availW / COLS, availH / ROWS);
+const dotSize = dotSpace * 0.35;
+const gridW = COLS * dotSpace, gridH = ROWS * dotSpace;
+const ox = (W - gridW) / 2, oy = (H - gridH) / 2;
+
+ctx.fillStyle = "#000";
+ctx.fillRect(0, 0, W, H);
+
+for (let row = 0; row < ROWS; row++) {
+  for (let col = 0; col < COLS; col++) {
+    const idx = row * COLS + col;
+    const cx = ox + col * dotSpace + dotSpace / 2;
+    const cy = oy + row * dotSpace + dotSpace / 2;
+    const half = dotSize / 2;
+
+    const isLived = idx < weeksLived;
+    const isCurrent = idx === weeksLived;
+
+    if (isCurrent) {
+      // Glow
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, half * 4);
+      g.addColorStop(0, "rgba(255,255,255,0.25)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - half * 4, cy - half * 4, half * 8, half * 8);
+      // Diamond
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - half); ctx.lineTo(cx + half, cy);
+      ctx.lineTo(cx, cy + half); ctx.lineTo(cx - half, cy);
+      ctx.closePath(); ctx.fill();
+    } else if (isLived) {
+      const a = (0.06 + (idx / Math.max(weeksLived, 1)) * 0.32).toFixed(3);
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - half); ctx.lineTo(cx + half, cy);
+      ctx.lineTo(cx, cy + half); ctx.lineTo(cx - half, cy);
+      ctx.closePath(); ctx.fill();
+    } else {
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - half); ctx.lineTo(cx + half, cy);
+      ctx.lineTo(cx, cy + half); ctx.lineTo(cx - half, cy);
+      ctx.closePath(); ctx.stroke();
+    }
+  }
+}
+
+// Output as PNG so iOS Shortcuts can grab it
+document.write('<img src="' + canvas.toDataURL("image/png") + '" style="width:100%">');
+</script>
+</body>
+</html>
